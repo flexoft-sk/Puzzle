@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <string name="app_name">Puzzle</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_button">Dummy Button</string>
+    
+    <string name="menu_new_game">Start new game</string>
+    <string name="menu_level">Game level</string>
+    <string name="menu_level_easy">Easy</string>
+    <string name="menu_level_medium">Medium</string>
+    <string name="menu_level_hard">Hard</string>
+    <string name="menu_about">About</string>
+
+</resources>

@@ -61,10 +61,6 @@ public class PuzzleActivity extends Activity {
 	/** The main view. */
 	private PuzzleView view;
 	
-	/** The main game board. */
-	private PuzzleBoard board;
-	
-	
 	/**
 	 * Converts board indexes to an integer.
 	 *
@@ -103,7 +99,7 @@ public class PuzzleActivity extends Activity {
 	 */
 	public PuzzleBoard getBoard()
 	{
-		return board;
+		return PuzzleBoard.getBoard(this, getRasterSize());
 	}
 	
 	/* (non-Javadoc)
@@ -118,9 +114,8 @@ public class PuzzleActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		
 		view = new PuzzleView(this);
-		board = new PuzzleBoard(this);
 		
-		board.shuffle();
+		getBoard().shuffle();
 		setContentView(view);
 		// setContentView(R.layout.activity_puzzle);
 
@@ -292,6 +287,25 @@ public class PuzzleActivity extends Activity {
 	@Override
 	public boolean onSearchRequested() {
 		return false;
+	}
+	
+	/**
+	 * @return Raster size based on selected level.
+	 */
+	public int getRasterSize()
+	{
+		if (PuzzleConfiguration.level == R.id.menu_level_easy)
+		{
+			return 3;
+		}
+		
+		if (PuzzleConfiguration.level == R.id.menu_level_hard)
+		{
+			return 5;
+		}
+		
+		// use default value for the rest
+		return 4;
 	}
 
 	/**

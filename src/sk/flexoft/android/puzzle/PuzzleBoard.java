@@ -4,6 +4,10 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
 
+/**
+ * @author Vladimir Iszer
+ *
+ */
 public class PuzzleBoard {
 	
 	/** Constant describing empty field index. */
@@ -29,12 +33,17 @@ public class PuzzleBoard {
     
     /** Random number generator. */
     private static final Random rand = new Random();
+    
+    private static final TreeMap<Integer, PuzzleBoard> boards;
 	
 	/** The puzzle activity. */
 	private PuzzleActivity puzzleActivity;
 	
 	/** The main game board keeping location of puzzles. */
 	private int[][] board;
+	
+	/** The main game board keeping location of puzzles. */
+	private int size;
 
 	static {
 		opposites = new TreeMap<Integer, Integer>();
@@ -47,22 +56,47 @@ public class PuzzleBoard {
 		shuffleMoves.put(R.id.menu_level_easy, 3);
 		shuffleMoves.put(R.id.menu_level_medium, 5);
 		shuffleMoves.put(R.id.menu_level_hard, 7);
+		
+		boards = new TreeMap<Integer, PuzzleBoard>();
     };
 	
 	/**
 	 * Instantiates a new puzzle board.
 	 *
-	 * @param view A PuzzleActivity instance.
+	 * @param activity The PuzzleActivity instance 
+	 * @param size The required size of the board
 	 */
-	public PuzzleBoard(PuzzleActivity activity)
+	public PuzzleBoard(PuzzleActivity activity, int size)
 	{
 		if (activity == null)
 		{
 			throw new IllegalArgumentException("activity");
 		}
 		
+		if (size < 2)
+		{
+			throw new IllegalArgumentException("size");
+		}
+		
 		puzzleActivity = activity;
-		board = new int[PuzzleActivity.RASTER_SIZE][PuzzleActivity.RASTER_SIZE];
+		this.size = size; 
+		board = new int[size][size];
+	}
+	
+	/**
+	 * Returns board of appropriate size.
+	 * @param activity The PuzzleActivity instance.
+	 * @param size Required size of the board.
+	 * @return A PuzzleBoard instance containing board of required size.
+	 */
+	public static PuzzleBoard getBoard(PuzzleActivity activity, int size)
+	{
+		if (!boards.containsKey(size))
+		{
+			boards.put(size, new PuzzleBoard(activity, size));	
+		}
+		
+		return boards.get(size);
 	}
 	
 	/**
@@ -73,15 +107,15 @@ public class PuzzleBoard {
 		int lastOperation = -1;
         int[] mask = new int[4];
 
-        for (int i = 0; i < PuzzleActivity.RASTER_SIZE * PuzzleActivity.RASTER_SIZE; i++)
+        for (int i = 0; i < size * size; i++)
         {
-            board[i / PuzzleActivity.RASTER_SIZE][i % PuzzleActivity.RASTER_SIZE] = i;
+            board[i / size][i % size] = i;
         }
         
-        board[PuzzleActivity.RASTER_SIZE - 1][PuzzleActivity.RASTER_SIZE - 1] = EMPTY_FIELD_IDX;
+        board[size - 1][size - 1] = EMPTY_FIELD_IDX;
         
-        int emptyX = PuzzleActivity.RASTER_SIZE - 1;
-        int emptyY = PuzzleActivity.RASTER_SIZE - 1;
+        int emptyX = size - 1;
+        int emptyY = size - 1;
         for (int i = 0; i < Math.pow(shuffleMoves.get(PuzzleConfiguration.level), 2); i++)
         {
         	Arrays.fill(mask, 0);
@@ -89,7 +123,7 @@ public class PuzzleBoard {
             {
                 mask[LeftIdx] = 1;
             }
-            if (emptyX < PuzzleActivity.RASTER_SIZE - 1)
+            if (emptyX < size - 1)
             {
                 mask[RightIdx] = 1;
             }
@@ -97,7 +131,7 @@ public class PuzzleBoard {
             {
                 mask[UpIdx] = 1;
             }
-            if (emptyY < PuzzleActivity.RASTER_SIZE - 1)
+            if (emptyY < size - 1)
             {
                 mask[DownIdx] = 1;
             }
@@ -149,7 +183,7 @@ public class PuzzleBoard {
 	 */
 	public int getPuzzleIndexAt(int x, int y)
 	{
-		if (x >= PuzzleActivity.RASTER_SIZE || y >= PuzzleActivity.RASTER_SIZE || x < 0 || y < 0)
+		if (x >= size || y >= size || x < 0 || y < 0)
 		{
 			throw new IllegalArgumentException("x or y");
 		}
@@ -182,7 +216,7 @@ public class PuzzleBoard {
 			return true;
 		}
 		
-		if (i < PuzzleActivity.RASTER_SIZE - 1 && getPuzzleIndexAt(i + 1, j) == EMPTY_FIELD_IDX)
+		if (i < size - 1 && getPuzzleIndexAt(i + 1, j) == EMPTY_FIELD_IDX)
 		{
 			return true;
 		}
@@ -192,7 +226,7 @@ public class PuzzleBoard {
 			return true;
 		}
 		
-		if (j < PuzzleActivity.RASTER_SIZE - 1 && getPuzzleIndexAt(i, j + 1) == EMPTY_FIELD_IDX)
+		if (j < size - 1 && getPuzzleIndexAt(i, j + 1) == EMPTY_FIELD_IDX)
 		{
 			return true;
 		}
@@ -216,7 +250,7 @@ public class PuzzleBoard {
 		{
 			board[x - 1][y] = board[x][y];
 		} 
-		else if (x < PuzzleActivity.RASTER_SIZE -1 && getPuzzleIndexAt(x + 1, y) == EMPTY_FIELD_IDX)
+		else if (x < size -1 && getPuzzleIndexAt(x + 1, y) == EMPTY_FIELD_IDX)
 		{
 			board[x + 1][y] = board[x][y];
 		}
@@ -224,7 +258,7 @@ public class PuzzleBoard {
 		{
 			board[x][y - 1] = board[x][y];
 		}
-		else if (y < PuzzleActivity.RASTER_SIZE - 1 && getPuzzleIndexAt(x, y + 1) == EMPTY_FIELD_IDX)
+		else if (y < size - 1 && getPuzzleIndexAt(x, y + 1) == EMPTY_FIELD_IDX)
 		{
 			board[x][y + 1] = board[x][y];
 		}

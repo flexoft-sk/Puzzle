@@ -158,7 +158,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		while (isRunning)
 		{
 			Surface s = holder.getSurface(); 
-			if (s == null || !s.isValid() || activeRect == null || activeRectHash ==0 || !viewMap.containsKey(activeRectHash))
+			if (s == null || !s.isValid() || activeRect == null || activeRectHash == 0 || !viewMap.containsKey(activeRectHash))
 			{
 				continue;
 			}
@@ -183,10 +183,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		
 		AndroidExtensions.Log(LogType.Debug, TAG, "surfaceChanged: [%d, %d]", width, height);
 		activeRect = new Rect(0, 0, width, height);
-		activeRectHash = hashRectSize(activeRect);
+		activeRectHash = hashRectSize(activeRect, PuzzleActivity.RASTER_SIZE);
 		if (!viewMap.containsKey(activeRectHash))
 		{
-			viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height()));
+			viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), PuzzleActivity.RASTER_SIZE));
 		}
 		
 		AndroidExtensions.Log(LogType.Debug, TAG, "view contains %d items", viewMap.size());
@@ -203,10 +203,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 			AndroidExtensions.Log(LogType.Debug, TAG, "[%d, %d]", rect.width(), rect.height());
 			
 			activeRect = new Rect(rect);
-			activeRectHash = hashRectSize(activeRect);
+			activeRectHash = hashRectSize(activeRect, PuzzleActivity.RASTER_SIZE);
 			if (!viewMap.containsKey(activeRectHash))
 			{
-				viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height()));
+				viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), PuzzleActivity.RASTER_SIZE));
 			}
 		}
 	}
@@ -217,6 +217,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		Log.d(TAG, "surfaceDestroyed");
 		
 		activeRect = null;
+		activeRectHash = 0;
 	}
 	
 	/**
@@ -248,13 +249,15 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	 * Hashes rectangle size into integer.
 	 *
 	 * @param rect the rectangle to be hashed
+	 * @param level The level to be used for hashing
 	 * @return hashed size of the rectangle in string
 	 */
-	private int hashRectSize(Rect rect)
+	private int hashRectSize(Rect rect, int level)
 	{
 		assert rect != null;
+		assert level > 0;
 		
-		return rect.width() * RECT_HASH_MULTIPLIER + rect.height();
+		return rect.width() * RECT_HASH_MULTIPLIER + rect.height() + level;
 	}
 	
 	private void drawScreen(Canvas canvas, ScreenInfo scrInfo)

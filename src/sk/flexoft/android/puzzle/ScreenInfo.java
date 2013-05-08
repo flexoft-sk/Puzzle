@@ -6,23 +6,45 @@ import android.graphics.Rect;
 
 public class ScreenInfo {
 	
+	/** The width of the screen	 */
 	int screenWidth;
 	
+	/** The height of the screen	 */
 	int screenHeight;
 	
+	/** Rectangle the bitmap has to fit in	 */
 	Rect targetRect;
 	
+	/** Individual small Bitmaps composing together the original bitmap */
 	Bitmap[][] bmpParts;
 	
-	Rect[][] targetParts; 
+	/** Individual small rectangles composing together the target rectangle */
+	Rect[][] targetParts;
 	
-	public ScreenInfo(Bitmap bitmap, int scrWidth, int scrHeight) throws IllegalArgumentException 
+	/** Amount of parts along one square side the bitmap and screen has to be split to. */
+	int parts;
+	
+	/**
+	 * The constructor.
+	 * @param bitmap - The original bitmap to be split
+	 * @param scrWidth The screen width
+	 * @param scrHeight The screen height
+	 * @param parts Amount of parts along one square side the bitmap and screen has to be split to. 
+	 * @throws IllegalArgumentException
+	 */
+	public ScreenInfo(Bitmap bitmap, int scrWidth, int scrHeight, int parts) throws IllegalArgumentException 
 	{
 		if (bitmap == null)
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("bitmap");
 		}
 		
+		if (parts < 1)
+		{
+			throw new IllegalArgumentException("parts"); 
+		}
+		
+		this.parts = parts;
 		screenWidth = scrWidth;
 		screenHeight = scrHeight;
 		
@@ -68,9 +90,9 @@ public class ScreenInfo {
 		
 		if (targetRect.contains(x, y))
 		{
-			for(int i = 0; i < PuzzleActivity.RASTER_SIZE; i++)
+			for(int i = 0; i < parts; i++)
 			{
-				for(int j = 0; j < PuzzleActivity.RASTER_SIZE; j++)
+				for(int j = 0; j < parts; j++)
 				{
 					if (targetParts[i][j].contains(x, y))
 					{
@@ -91,18 +113,18 @@ public class ScreenInfo {
 	private void InitParts(Bitmap bitmap) {
 		assert bitmap != null;
 		
-		bmpParts = new Bitmap[PuzzleActivity.RASTER_SIZE][PuzzleActivity.RASTER_SIZE];
-		targetParts = new Rect[PuzzleActivity.RASTER_SIZE][PuzzleActivity.RASTER_SIZE];
+		bmpParts = new Bitmap[parts][parts];
+		targetParts = new Rect[parts][parts];
 		
-		int bmpHorStep = bitmap.getWidth() / PuzzleActivity.RASTER_SIZE;
-		int bmpVertStep = bitmap.getHeight() / PuzzleActivity.RASTER_SIZE;
+		int bmpHorStep = bitmap.getWidth() / parts;
+		int bmpVertStep = bitmap.getHeight() / parts;
 		
-		int partWidth = targetRect.width() / PuzzleActivity.RASTER_SIZE;
-		int partHeight = targetRect.height() / PuzzleActivity.RASTER_SIZE;
+		int partWidth = targetRect.width() / parts;
+		int partHeight = targetRect.height() / parts;
 		
-		for (int i = 0; i < PuzzleActivity.RASTER_SIZE; i++)
+		for (int i = 0; i < parts; i++)
 		{
-			for(int j = 0; j < PuzzleActivity.RASTER_SIZE; j++)
+			for(int j = 0; j < parts; j++)
 			{
 				bmpParts[i][j] = AndroidExtensions.copyBitmapPart(
 						bitmap, 

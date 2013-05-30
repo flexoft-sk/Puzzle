@@ -96,7 +96,7 @@ public class ScreenInfo {
 				{
 					if (targetParts[i][j].contains(x, y))
 					{
-						return PuzzleActivity.indexes2Int(i, j);
+						return PuzzleActivity.indexes2Int(i, j, parts);
 					}
 				}
 			}

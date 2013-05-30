@@ -4,6 +4,9 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
 
+import android.view.Gravity;
+import android.widget.Toast;
+
 /**
  * @author Vladimir Iszer
  *
@@ -44,6 +47,9 @@ public class PuzzleBoard {
 	
 	/** The main game board keeping location of puzzles. */
 	private int size;
+	
+	/** Indicates the user finished the game */
+	private boolean hasFinished = true; 
 
 	static {
 		opposites = new TreeMap<Integer, Integer>();
@@ -172,6 +178,24 @@ public class PuzzleBoard {
             board[x][y] = board[emptyX][emptyY];
             board[emptyX][emptyY] = EMPTY_FIELD_IDX;
         }
+        
+        hasFinished = false;
+	}
+	
+	/**
+	 * @return Raster size of this board 
+	 */
+	public int getSize()
+	{
+		return size;
+	}
+	
+	/**
+	 * @return true if the user finished successfully the puzzle on this board; otherwise false
+	 */
+	public boolean isFinished()
+	{
+		return hasFinished;
 	}
 	
 	/**
@@ -198,7 +222,7 @@ public class PuzzleBoard {
 	 * @return true, if field is exchangeable; otherwise false
 	 */
 	public boolean isFieldExchangeable(int index) {
-		int [] indexes = PuzzleActivity.int2Indexes(index);
+		int [] indexes = PuzzleActivity.int2Indexes(index, size);
 		return isFieldExchangeable(indexes[0], indexes[1]);
 	}
 	
@@ -211,6 +235,11 @@ public class PuzzleBoard {
 	 * @return true, if field is exchangeable; otherwise false
 	 */
 	public boolean isFieldExchangeable(int i, int j) {
+		if (hasFinished)
+		{
+			return false;
+		}
+		
 		if (i > 0 && getPuzzleIndexAt(i - 1, j) == EMPTY_FIELD_IDX)
 		{
 			return true;
@@ -240,7 +269,7 @@ public class PuzzleBoard {
 	 * @param index The index
 	 */
 	public void exchange(int index) {
-		int [] indexes = PuzzleActivity.int2Indexes(index);
+		int [] indexes = PuzzleActivity.int2Indexes(index, size);
 		assert isFieldExchangeable(indexes[0], indexes[1]);
 		
 		int x = indexes[0];
@@ -268,5 +297,40 @@ public class PuzzleBoard {
 		}
 		
 		board[x][y] = EMPTY_FIELD_IDX;
+		
+		checkAndHandleGameOver();
+	}
+	
+	/**
+	 * Checks if the state of the board means successful finish of the puzzle and if yes shows congratulations. 
+	 */
+	private void checkAndHandleGameOver()
+	{
+		if (board[size - 1][size - 1] != EMPTY_FIELD_IDX)
+		{
+			// nothing to do - the board is correct when the empty field is right bottom
+			return;
+		}
+		
+		Boolean checkOk = true;
+		for (int i = 0; i < (size * size) - 1; i++)
+        {
+            if (board[i / size][i % size] != i)
+            {
+            	checkOk = false;
+            	break;
+            }
+        }
+		
+		if (checkOk)
+		{
+			// the game is over
+			hasFinished = true;
+			
+			// show toast for congratulations
+			Toast toast = Toast.makeText(puzzleActivity.getApplicationContext(), R.string.congratulations, Toast.LENGTH_LONG);
+			toast.setGravity(Gravity.CENTER, 0, 0);
+			toast.show();
+		}
 	}
 }

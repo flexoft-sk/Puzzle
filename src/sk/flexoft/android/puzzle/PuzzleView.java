@@ -8,7 +8,6 @@ import java.util.TreeMap;
 import sk.flexoft.android.puzzle.util.AndroidExtensions;
 import sk.flexoft.android.puzzle.util.AndroidExtensions.LogType;
 
-import android.R.bool;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,13 +16,11 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.WindowManager;
 
 /**
  * The Class PuzzleView encapsulates the surface drawing.
@@ -75,9 +72,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	/** The gesture rectangle indexes. */
 	private int gestureRectIdx = -1;
 	
-	/** The time when gesture was first time observed on a field. Used to measure the time on a field to perform a move.*/
-	private long gestureOnFieldStartTime = -1;
-	
+	/**
+	 * Constructor of the PuzzleView class. 
+	 * @param context The activity creating this instance.
+	 */
 	public PuzzleView(Context context) {
 		super(context);
 		
@@ -115,6 +113,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		resume();
 	}
 
+	/**
+	 * Performs needed operations on application pause.
+	 */
 	public void pause()
 	{
 		isRunning = false;
@@ -134,6 +135,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		t = null;
 	}
 	
+	/**
+	 * Resumes the processing on application restore.
+	 */
 	public void resume()
 	{
 		if (t != null)
@@ -155,24 +159,58 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	@Override
 	public void run() {
 		
+		boolean isFinishedStateDrawn = false;
 		while (isRunning)
 		{
+			// in case the puzzle is finished by last move, draw the new state only once
+			if (puzzleActivity.getBoard().isFinished())
+			{
+				if (!isFinishedStateDrawn)
+				{
+					Log.d(TAG, "Seeting isFinishedStateDrawn to true.");
+					isFinishedStateDrawn = true;
+				}
+				else
+				{
+					try 
+					{
+						Thread.sleep(200);
+						continue;
+					} 
+					catch (InterruptedException e) 
+					{
+						// thread termination was requested during the sleep
+						return;
+					}
+				}
+			}
+			else
+			{
+				isFinishedStateDrawn = false;
+			}
+			
 			Surface s = holder.getSurface(); 
 			if (s == null || !s.isValid() || activeRect == null || activeRectHash == 0 || !viewMap.containsKey(activeRectHash))
 			{
 				continue;
 			}
 			
-			ScreenInfo info = viewMap.get(activeRectHash);
-
-			if (info == null)
-			{
-				continue;
-			}
-			
 			Canvas c = holder.lockCanvas();
-			drawScreen(c, info);
-			holder.unlockCanvasAndPost(c);
+			
+			try
+			{
+				ScreenInfo info = viewMap.get(activeRectHash);
+				PuzzleBoard board = puzzleActivity.getBoard();
+				
+				if (info != null && board != null && info.parts == board.getSize())
+				{
+					drawScreen(c, info, board);	
+				}
+			}
+			finally
+			{
+				holder.unlockCanvasAndPost(c);
+			}
 		}
  	}
 
@@ -182,33 +220,24 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 			int height) {
 		
 		AndroidExtensions.Log(LogType.Debug, TAG, "surfaceChanged: [%d, %d]", width, height);
+		pause();
 		activeRect = new Rect(0, 0, width, height);
-		activeRectHash = hashRectSize(activeRect, PuzzleActivity.RASTER_SIZE);
+		int rasterSize = puzzleActivity.getRasterSize();
+		activeRectHash = hashRectSize(activeRect, rasterSize);
 		if (!viewMap.containsKey(activeRectHash))
 		{
-			viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), PuzzleActivity.RASTER_SIZE));
+			viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), rasterSize));
 		}
 		
 		AndroidExtensions.Log(LogType.Debug, TAG, "view contains %d items", viewMap.size());
+		resume();
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		
 		Log.d(TAG, "surfaceCreated");
-		
-		Rect rect = holder.getSurfaceFrame();
-		if (rect != null && rect.width() != 0 && rect.height() != 0)
-		{
-			AndroidExtensions.Log(LogType.Debug, TAG, "[%d, %d]", rect.width(), rect.height());
-			
-			activeRect = new Rect(rect);
-			activeRectHash = hashRectSize(activeRect, PuzzleActivity.RASTER_SIZE);
-			if (!viewMap.containsKey(activeRectHash))
-			{
-				viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), PuzzleActivity.RASTER_SIZE));
-			}
-		}
+		RefreshActiveScreenInfo();
 	}
 
 	@Override
@@ -221,6 +250,31 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	}
 	
 	/**
+	 * Refreshes active rectangle and screen info
+	 */
+	public void RefreshActiveScreenInfo()
+	{
+		pause();
+		Rect rect = holder.getSurfaceFrame();
+		if (rect != null && rect.width() != 0 && rect.height() != 0)
+		{
+			AndroidExtensions.Log(LogType.Debug, TAG, "RefreshActiveScreenInfo: [%d, %d]", rect.width(), rect.height());
+			
+			activeRect = new Rect(rect);
+			int rasterSize = puzzleActivity.getRasterSize();
+			activeRectHash = hashRectSize(activeRect, rasterSize);
+			if (!viewMap.containsKey(activeRectHash))
+			{
+				viewMap.put(activeRectHash, new ScreenInfo(bitmap, activeRect.width(), activeRect.height(), rasterSize));
+			}
+			
+			AndroidExtensions.Log(LogType.Debug, TAG, "view contains %d items", viewMap.size());
+		}
+		
+		resume();
+	}
+	
+	/**
 	 * On touch event handling.
 	 *
 	 * @param v The view sending the event.
@@ -229,19 +283,21 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	 */
 	public boolean onTouch(View v, MotionEvent m) {
 		// printSamples(m);
-		switch (m.getActionMasked())
+		if (!puzzleActivity.getBoard().isFinished())
 		{
-			case MotionEvent.ACTION_DOWN: handleTouchDown(m); 
+			switch (m.getActionMasked())
+			{
+				case MotionEvent.ACTION_DOWN: handleTouchDown(m); 
+					break;
+				case MotionEvent.ACTION_MOVE: handleTouchMove(m);
+					break;
+				case MotionEvent.ACTION_CANCEL: handleTouchCancel(m);
+					break;
+				case MotionEvent.ACTION_UP: 
+				case MotionEvent.ACTION_POINTER_UP: handleTouchPointerUp(m);
 				break;
-			case MotionEvent.ACTION_MOVE: handleTouchMove(m);
-				break;
-			case MotionEvent.ACTION_CANCEL: handleTouchCancel(m);
-				break;
-			case MotionEvent.ACTION_UP: 
-			case MotionEvent.ACTION_POINTER_UP: handleTouchPointerUp(m);
-			break;
+			}
 		}
-		
 		return true;
 	}
 	
@@ -260,34 +316,35 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		return rect.width() * RECT_HASH_MULTIPLIER + rect.height() + level;
 	}
 	
-	private void drawScreen(Canvas canvas, ScreenInfo scrInfo)
+	private void drawScreen(Canvas canvas, ScreenInfo scrInfo, PuzzleBoard board)
 	{
 		assert canvas != null;
 		assert scrInfo != null;
+		assert board != null;
 		
 		canvas.drawColor(Color.BLACK);
 
 		// canvas.drawBitmap(bitmap, new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight()) , scrInfo.targetRect, null);
-		for (int i = 0; i < PuzzleActivity.RASTER_SIZE; i++)
+		for (int i = 0; i < scrInfo.parts; i++)
 		{
-			for(int j = 0; j < PuzzleActivity.RASTER_SIZE; j++)
+			for(int j = 0; j < scrInfo.parts; j++)
 			{
-				int bmpCompositeIndex = puzzleActivity.getBoard().getPuzzleIndexAt(i, j);
-				assert bmpCompositeIndex >= 0 || bmpCompositeIndex < Math.pow(PuzzleActivity.RASTER_SIZE, 2) || bmpCompositeIndex == PuzzleBoard.EMPTY_FIELD_IDX;
+				int bmpCompositeIndex = board.getPuzzleIndexAt(i, j);
+				assert bmpCompositeIndex >= 0 || bmpCompositeIndex < Math.pow(scrInfo.parts, 2) || bmpCompositeIndex == PuzzleBoard.EMPTY_FIELD_IDX;
 				
 				// empty field is left black
 				if (bmpCompositeIndex != PuzzleBoard.EMPTY_FIELD_IDX)
 				{
-					Bitmap bmpPart = scrInfo.bmpParts[bmpCompositeIndex / PuzzleActivity.RASTER_SIZE][bmpCompositeIndex % PuzzleActivity.RASTER_SIZE];
+					Bitmap bmpPart = scrInfo.bmpParts[bmpCompositeIndex / scrInfo.parts][bmpCompositeIndex % scrInfo.parts];
 					Rect targetPart = scrInfo.targetParts[i][j]; 
 					canvas.drawBitmap(bmpPart, targetPart.left, targetPart.top, null);
 				}
 			}
 		}
 		
-		int horStep = scrInfo.targetRect.width() / PuzzleActivity.RASTER_SIZE;
-		int verStep = scrInfo.targetRect.height() / PuzzleActivity.RASTER_SIZE;
-		for (int i = 1; i < PuzzleActivity.RASTER_SIZE; i++)
+		int horStep = scrInfo.targetRect.width() / scrInfo.parts;
+		int verStep = scrInfo.targetRect.height() / scrInfo.parts;
+		for (int i = 1; i < scrInfo.parts; i++)
 		{
 			int vertPos = scrInfo.targetRect.top + i * verStep;
 			canvas.drawLine(scrInfo.targetRect.left, vertPos , scrInfo.targetRect.right, vertPos, rasterPaint);
@@ -300,8 +357,8 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		
 		if (gestureRectIdx != -1)
 		{
-			int[] indexes = PuzzleActivity.int2Indexes(gestureRectIdx);
-			if (puzzleActivity.getBoard().isFieldExchangeable(indexes[0], indexes[1]))
+			int[] indexes = PuzzleActivity.int2Indexes(gestureRectIdx, scrInfo.parts);
+			if (board.isFieldExchangeable(indexes[0], indexes[1]))
 			{
 				touchPaint.setColor(Color.LTGRAY);
 				touchPaint.setAlpha(64);
@@ -314,13 +371,24 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 			
 			canvas.drawRect(scrInfo.targetParts[indexes[0]][indexes[1]], touchPaint);
 		}
+		
+		// make the surface look inactive after game was finished
+		if (board.isFinished())
+		{
+			AndroidExtensions.Log(LogType.Debug, TAG,"Paiting finished state on rect [%d, %d].", scrInfo.targetRect.width(), scrInfo.targetRect.height());
+			touchPaint.setColor(Color.LTGRAY);
+			touchPaint.setAlpha(64);
+			canvas.drawRect(scrInfo.targetRect, touchPaint);
+		}
 	}
 	
+
+	/*
 	private void printSamples(MotionEvent ev) {
 	     final int historySize = ev.getHistorySize();
 	     final int pointerCount = ev.getPointerCount();
 	     
-	     /*
+	     
 	     for (int h = 0; h < historySize; h++) {
 	         AndroidExtensions.Log(LogType.Debug, TAG, "At time %d:", ev.getHistoricalEventTime(h));
 	         for (int p = 0; p < pointerCount; p++) {
@@ -328,7 +396,6 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	                 ev.getPointerId(p), ev.getHistoricalX(p, h), ev.getHistoricalY(p, h));
 	         }
 	     }
-	     */
 	     
 	     int action = ev.getActionMasked();
 	     if (action == MotionEvent.ACTION_MOVE)
@@ -366,7 +433,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		}
 		
 		return String.format("%d", a);
-	}
+	}*/
 	
 	private void handleTouchPointerUp(MotionEvent m) {
 		int i = m.getActionIndex();
@@ -412,18 +479,7 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 				{
 					ScreenInfo info = viewMap.get(key);
 					assert info != null;
-					int lastGestureIdx = gestureRectIdx; 
 					gestureRectIdx = info.getRectIdxFromPoint((int)m.getX(), (int)m.getY());
-					
-					if (gestureRectIdx == -1)
-					{
-						gestureOnFieldStartTime = -1;
-					}
-					else if (lastGestureIdx != gestureRectIdx)
-					{
-						gestureOnFieldStartTime = m.getEventTime();						
-					}
-					
 					break;
 				}
 			}
@@ -443,15 +499,6 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 				ScreenInfo info = viewMap.get(key);
 				assert info != null;
 				gestureRectIdx = info.getRectIdxFromPoint((int)m.getX(), (int)m.getY());
-				
-				if (gestureRectIdx != -1)
-				{
-					gestureOnFieldStartTime = m.getEventTime();
-				}
-				else
-				{
-					gestureOnFieldStartTime = -1;
-				}
 			}
 		}
 	}

@@ -27,9 +27,6 @@ import android.view.WindowManager;
  */
 public class PuzzleActivity extends Activity {
 
-	/** The size of the raster. */
-	public static final Integer RASTER_SIZE = 4;
-	
 	/** The Constant TAG. */
 	private static final String TAG = "PuzzleActivity";
 	
@@ -66,28 +63,30 @@ public class PuzzleActivity extends Activity {
 	 *
 	 * @param x The x index.
 	 * @param y The y index.
+	 * @param rasterSize The size of the raster.
 	 * @return The packed value of indexes.
 	 */
-	public static int indexes2Int(int x, int y)
+	public static int indexes2Int(int x, int y, int rasterSize)
 	{
-		assert x < RASTER_SIZE && x >= 0;
-		assert y < RASTER_SIZE && y >= 0;
+		assert x < rasterSize && x >= 0;
+		assert y < rasterSize && y >= 0;
 		
-		return x * RASTER_SIZE + y;
+		return x * rasterSize + y;
 	}
 	
 	/**
 	 * Converts an integer to board indexes.
 	 *
 	 * @param i The packed indexes value.
+	 * @param rasterSize The size of the raster.
 	 * @return The indexes.
 	 */
-	public static int[] int2Indexes(int i)
+	public static int[] int2Indexes(int i, int rasterSize)
 	{
-		assert i >= 0 && i < RASTER_SIZE * RASTER_SIZE;
+		assert i >= 0 && i < rasterSize * rasterSize;
 		int[] result = new int[2];
-		result[0] = i / RASTER_SIZE;
-		result[1] = i % RASTER_SIZE;
+		result[0] = i / rasterSize;
+		result[1] = i % rasterSize;
 		
 		return result;
 	}
@@ -317,6 +316,7 @@ public class PuzzleActivity extends Activity {
 		if (PuzzleConfiguration.level != level)
 		{
 			PuzzleConfiguration.level = level;
+			view.RefreshActiveScreenInfo();
 			getBoard().shuffle();
 		}
 	}

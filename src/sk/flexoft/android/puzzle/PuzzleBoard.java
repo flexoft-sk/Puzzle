@@ -222,6 +222,11 @@ public class PuzzleBoard {
 	 * @return true, if field is exchangeable; otherwise false
 	 */
 	public boolean isFieldExchangeable(int index) {
+		if (index == -1)
+		{
+			return false;
+		}
+		
 		int [] indexes = PuzzleActivity.int2Indexes(index, size);
 		return isFieldExchangeable(indexes[0], indexes[1]);
 	}

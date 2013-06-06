@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+    <TextView
+        android:id="@+id/about_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FFF"
+        android:text = "flxPuzzle is open source puzzle made by Vladimir Iszer (www.flexoft.sk).\r\nYou can use or modify the code as you wish as long as you remove reference to flexoft after applying changes."/>
+ 
+     <Button
+        android:id="@+id/btnAboutOK"
+        android:layout_width="100px"
+        android:layout_height="wrap_content"
+        android:text="Ok"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@+id/about_text"
+        android:layout_centerHorizontal="true"/>
+</RelativeLayout>
+
+

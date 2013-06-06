@@ -1,11 +1,13 @@
 package sk.flexoft.android.puzzle;
 
+import sk.flexoft.android.puzzle.R.id;
 import sk.flexoft.android.puzzle.util.AndroidExtensions;
 import sk.flexoft.android.puzzle.util.SystemUiHider;
 import sk.flexoft.android.puzzle.util.AndroidExtensions.LogType;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Dialog;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -231,7 +234,7 @@ public class PuzzleActivity extends Activity {
             getBoard().shuffle();
             return true;
         case R.id.menu_about:
-        	Log.d(TAG, "About menu pressed.");
+        	showAboutBox();
             return true;
         case R.id.menu_level_easy:
         case R.id.menu_level_medium:
@@ -319,6 +322,31 @@ public class PuzzleActivity extends Activity {
 			view.RefreshActiveScreenInfo();
 			getBoard().shuffle();
 		}
+	}
+	
+	/**
+	 * SHows the about dialog box.
+	 */
+	private void showAboutBox()
+	{
+		final Dialog aboutDlg = new Dialog(this);
+		aboutDlg.setContentView(R.layout.about);
+		aboutDlg.setTitle(R.string.menu_about);
+		
+		Button aboutDlgOkBtn = (Button)(aboutDlg.findViewById(R.id.btnAboutOK)); 
+		aboutDlgOkBtn.setOnClickListener(new View.OnClickListener()
+				 {
+
+					/* (non-Javadoc)
+					 * @see android.view.View.OnClickListener#onClick(android.view.View)
+					 */
+					@Override
+					public void onClick(View v) {
+						aboutDlg.dismiss();
+					}
+				 });
+		
+		aboutDlg.show();
 	}
 
 	/* (non-Javadoc)

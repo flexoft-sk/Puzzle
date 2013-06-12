@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 
 /**
+ * @author Vladimir Iszer
  * The class implements helper methods extending Android related functionality. 
  *
  */

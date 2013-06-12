@@ -9,6 +9,10 @@ import android.widget.Toast;
 
 /**
  * @author Vladimir Iszer
+ * Represents a board for a game
+ */
+/**
+ * @author izi
  *
  */
 public class PuzzleBoard {
@@ -51,6 +55,7 @@ public class PuzzleBoard {
 	/** Indicates the user finished the game */
 	private boolean hasFinished = true; 
 
+	/** Static constructor **/
 	static {
 		opposites = new TreeMap<Integer, Integer>();
 		opposites.put(LeftIdx, RightIdx);

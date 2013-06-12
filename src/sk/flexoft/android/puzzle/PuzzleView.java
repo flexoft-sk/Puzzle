@@ -23,6 +23,7 @@ import android.view.SurfaceView;
 import android.view.View;
 
 /**
+ * @author Vladimir Iszer
  * The Class PuzzleView encapsulates the surface drawing.
  */
 public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.Callback, View.OnTouchListener {
@@ -215,6 +216,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
  	}
 
 	
+	/* (non-Javadoc)
+	 * @see android.view.SurfaceHolder.Callback#surfaceChanged(android.view.SurfaceHolder, int, int, int)
+	 */
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width,
 			int height) {
@@ -233,6 +237,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		resume();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.SurfaceHolder.Callback#surfaceCreated(android.view.SurfaceHolder)
+	 */
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
 		
@@ -240,6 +247,9 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		RefreshActiveScreenInfo();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.view.SurfaceHolder.Callback#surfaceDestroyed(android.view.SurfaceHolder)
+	 */
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
 
@@ -316,6 +326,12 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		return rect.width() * RECT_HASH_MULTIPLIER + rect.height() + level;
 	}
 	
+	/**
+	 * Draws current board state visual representation to the canvas. 
+	 * @param canvas The canvas to draw into.
+	 * @param scrInfo Visual content related to current screen layout. 
+	 * @param board The game board providing current state of the game.
+	 */
 	private void drawScreen(Canvas canvas, ScreenInfo scrInfo, PuzzleBoard board)
 	{
 		assert canvas != null;
@@ -383,58 +399,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	}
 	
 
-	/*
-	private void printSamples(MotionEvent ev) {
-	     final int historySize = ev.getHistorySize();
-	     final int pointerCount = ev.getPointerCount();
-	     
-	     
-	     for (int h = 0; h < historySize; h++) {
-	         AndroidExtensions.Log(LogType.Debug, TAG, "At time %d:", ev.getHistoricalEventTime(h));
-	         for (int p = 0; p < pointerCount; p++) {
-	        	 AndroidExtensions.Log(LogType.Debug, TAG, "  pointer %d: (%f,%f)",
-	                 ev.getPointerId(p), ev.getHistoricalX(p, h), ev.getHistoricalY(p, h));
-	         }
-	     }
-	     
-	     int action = ev.getActionMasked();
-	     if (action == MotionEvent.ACTION_MOVE)
-	     {
-	    	 return;
-	     }
-	     
-	     AndroidExtensions.Log(LogType.Debug, TAG, "%s at time %d:", convertAction(action), ev.getEventTime());
-	     for (int p = 0; p < pointerCount; p++) {
-	         AndroidExtensions.Log(LogType.Debug, TAG, "  pointer %d: (%f,%f)",
-	             ev.getPointerId(p), ev.getX(p), ev.getY(p));
-	     }
-	 }
-	
-	private String convertAction(int a)
-	{
-		if (a == MotionEvent.ACTION_DOWN)
-		{
-			return "DOWN";
-		}
-		
-		if (a == MotionEvent.ACTION_MOVE)
-		{
-			return "MOVE";
-		}
-		
-		if (a == MotionEvent.ACTION_UP)
-		{
-			return "UP";
-		}
-		
-		if (a == MotionEvent.ACTION_CANCEL)
-		{
-			return "CANCEL";
-		}
-		
-		return String.format("%d", a);
-	}*/
-	
+	/**
+	 * Handls user interaction - user touch up.
+	 * @param m Provides details of the touch event.
+	 */
 	private void handleTouchPointerUp(MotionEvent m) {
 		int i = m.getActionIndex();
 		
@@ -465,10 +433,18 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		}
 	}
 	
+	/**
+	 * Handles cancellation of a gesture.
+	 * @param m Details about the cancellation.
+	 */
 	private void handleTouchCancel(MotionEvent m) {
 		gesturePointerId = gestureRectIdx = -1;
 	}
 
+	/**
+	 * Handles screen touch move. 
+	 * @param m Details about the move event.
+	 */
 	private void handleTouchMove(MotionEvent m) {
 		for(int i = 0; i < m.getPointerCount(); i++)
 		{
@@ -487,6 +463,10 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 		
 	}
 
+	/**
+	 * Initiates a gesture handling after touch down event.
+	 * @param m Details about the touch event.
+	 */
 	private void handleTouchDown(MotionEvent m) {
 		assert m.getPointerCount() == 0;
 		gesturePointerId = m.getPointerId(m.getActionIndex());

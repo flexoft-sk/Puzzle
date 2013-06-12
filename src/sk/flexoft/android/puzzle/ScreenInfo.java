@@ -4,6 +4,10 @@ import sk.flexoft.android.puzzle.util.AndroidExtensions;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 
+/**
+ * @author Vladimir Iszer
+ * Encapsulates information related to a screen layout. 
+ */
 public class ScreenInfo {
 	
 	/** The width of the screen	 */
@@ -140,6 +144,11 @@ public class ScreenInfo {
 		}
 	}
 
+	/**
+	 * Scales down a bitmap to fit the current screen.
+	 * @param bmpWidth
+	 * @param bmpHeight
+	 */
 	private void ScaleDown(int bmpWidth, int bmpHeight) {
 		float widthRatio = (float)bmpWidth /(float)screenWidth;
 		float ratio = (float)bmpHeight / (float)screenHeight;

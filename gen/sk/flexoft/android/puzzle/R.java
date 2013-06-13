@@ -46,6 +46,7 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int puzzle_menu=0x7f080000;
     }
     public static final class string {
+        public static final int about_text=0x7f06000a;
         public static final int app_name=0x7f060000;
         public static final int congratulations=0x7f060009;
         public static final int dummy_button=0x7f060002;

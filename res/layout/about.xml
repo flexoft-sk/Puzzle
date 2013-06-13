@@ -6,8 +6,10 @@
         android:id="@+id/about_text"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:textColor="#FFF"
-        android:text = "flxPuzzle is open source puzzle made by Vladimir Iszer (www.flexoft.sk).\r\nYou can use or modify the code as you wish as long as you remove reference to flexoft after applying changes."/>
+        android:text = "@string/about_text"/>
  
      <Button
         android:id="@+id/btnAboutOK"

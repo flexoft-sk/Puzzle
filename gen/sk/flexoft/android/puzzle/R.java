@@ -31,7 +31,8 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int dummy_button=0x7f090004;
         public static final int fullscreen_content=0x7f090002;
         public static final int fullscreen_content_controls=0x7f090003;
-        public static final int menu_about=0x7f09000a;
+        public static final int menu_about=0x7f09000b;
+        public static final int menu_change_image=0x7f09000a;
         public static final int menu_level=0x7f090006;
         public static final int menu_level_easy=0x7f090007;
         public static final int menu_level_hard=0x7f090009;
@@ -46,17 +47,21 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
         public static final int puzzle_menu=0x7f080000;
     }
     public static final class string {
-        public static final int about_text=0x7f06000a;
+        public static final int about_text=0x7f06000b;
         public static final int app_name=0x7f060000;
-        public static final int congratulations=0x7f060009;
+        public static final int congratulations=0x7f06000a;
         public static final int dummy_button=0x7f060002;
         public static final int dummy_content=0x7f060001;
-        public static final int menu_about=0x7f060008;
+        public static final int err_invalid_image=0x7f06000d;
+        public static final int err_no_fm=0x7f06000e;
+        public static final int menu_about=0x7f060009;
+        public static final int menu_change_image=0x7f060008;
         public static final int menu_level=0x7f060004;
         public static final int menu_level_easy=0x7f060005;
         public static final int menu_level_hard=0x7f060007;
         public static final int menu_level_medium=0x7f060006;
         public static final int menu_new_game=0x7f060003;
+        public static final int select_image=0x7f06000c;
     }
     public static final class style {
         /** 

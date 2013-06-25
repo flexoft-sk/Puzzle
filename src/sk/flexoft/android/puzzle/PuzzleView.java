@@ -10,7 +10,6 @@ import sk.flexoft.android.puzzle.util.AndroidExtensions.LogType;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -76,20 +75,23 @@ public class PuzzleView extends SurfaceView implements Runnable, SurfaceHolder.C
 	/**
 	 * Constructor of the PuzzleView class. 
 	 * @param context The activity creating this instance.
+	 * @bitmap the bitmap to be used for story board
 	 */
-	public PuzzleView(Context context) {
+	public PuzzleView(Context context, Bitmap bitmap) {
 		super(context);
 		
 		if (context == null)
 		{
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("context");
 		}
 		
-		puzzleActivity = (PuzzleActivity)context;
+		if (bitmap == null)
+		{
+			throw new IllegalArgumentException("bitmap");
+		}
 		
-		BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inSampleSize = 1;
-		bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.puzzle, options);
+		this.bitmap = bitmap;
+		puzzleActivity = (PuzzleActivity)context;
 		
 		rasterPaint = new Paint();
 		rasterPaint.setColor(Color.LTGRAY);

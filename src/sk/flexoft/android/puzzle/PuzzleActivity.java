@@ -1,10 +1,17 @@
 package sk.flexoft.android.puzzle;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
 import sk.flexoft.android.puzzle.util.AndroidExtensions;
 import sk.flexoft.android.puzzle.util.AndroidExtensions.LogType;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -26,8 +33,19 @@ public class PuzzleActivity extends Activity {
 	/** The Constant TAG. */
 	private static final String TAG = "PuzzleActivity";
 	
+	/** Constant for intent request to choose a picture. */
+	private static final int INTENT_REQ_PIC_PICK = 666;
+	
+	/** Bitmap decoding options */
+	private static final BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
+	
 	/** The main view. */
 	private PuzzleView view;
+	
+	public PuzzleActivity()
+	{
+		bitmapOptions.inSampleSize = 1;
+	}
 	
 	/**
 	 * Converts board indexes to an integer.
@@ -83,7 +101,9 @@ public class PuzzleActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		
-		view = new PuzzleView(this);
+		Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.puzzle, bitmapOptions);
+		
+		view = new PuzzleView(this, bitmap);
 		
 		getBoard().shuffle();
 		setContentView(view);
@@ -94,6 +114,7 @@ public class PuzzleActivity extends Activity {
 	 */
 	@Override
 	protected void onPause() {
+		Log.d(TAG, "onPause");
 		super.onPause();
 		if (view != null)
 		{
@@ -101,12 +122,12 @@ public class PuzzleActivity extends Activity {
 		}
 	}
 
-
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onResume()
 	 */
 	@Override
 	protected void onResume() {
+		Log.d(TAG, "onResume");
 		super.onResume();
 		if (view != null)
 		{
@@ -147,6 +168,9 @@ public class PuzzleActivity extends Activity {
             }
         	setLevel(item.getItemId());
             return true;
+        case R.id.menu_change_image:
+        	showFileChooser();
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
 		}
@@ -189,6 +213,48 @@ public class PuzzleActivity extends Activity {
 		return false;
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.d(TAG, "onActivityResult");
+		if (requestCode == INTENT_REQ_PIC_PICK && resultCode == RESULT_OK)
+		{
+			Uri uri = data.getData();
+            Log.d(TAG, "File Uri: " + uri.toString());
+            
+            Bitmap bmp = null;
+            if (uri.getScheme().equals("content"))
+            {
+            	try {
+					InputStream stream = getContentResolver().openInputStream(uri);
+					bmp = BitmapFactory.decodeStream(stream, null, bitmapOptions);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					// nothing special to do here, the bitmap couldn't be opened
+				}
+            }
+            else if (uri.getScheme().equals("file"))
+            {	
+            	bmp = BitmapFactory.decodeFile(uri.getPath(), bitmapOptions);
+            }
+            
+            if (bmp == null)
+            {
+            	AndroidExtensions.showCenteredToast(getApplicationContext(), R.string.err_invalid_image, false);
+            }
+            else
+            {
+            	view = new PuzzleView(this, bmp);
+            	getBoard().shuffle();
+            	setContentView(view);
+            }
+		}
+		
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
 	/**
 	 * @return Raster size based on selected level.
 	 */
@@ -245,5 +311,22 @@ public class PuzzleActivity extends Activity {
 				 });
 		
 		aboutDlg.show();
+	}
+	
+	/**
+	 * Calls a file manager
+	 */
+	private void showFileChooser() {
+	    Intent intent = new Intent(Intent.ACTION_GET_CONTENT); 
+	    intent.setType("image/*"); 
+	    intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+	    try {
+	        startActivityForResult(
+	                Intent.createChooser(intent, getString(R.string.select_image)), INTENT_REQ_PIC_PICK);
+	    } catch (android.content.ActivityNotFoundException ex) {
+	        // Potentially direct the user to the Market with a Dialog
+	        AndroidExtensions.showCenteredToast(getApplicationContext(), R.string.err_no_fm, false);
+	    }
 	}
 }

@@ -3,9 +3,12 @@
  */
 package sk.flexoft.android.puzzle.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.view.Gravity;
+import android.widget.Toast;
 
 /**
  * @author Vladimir Iszer
@@ -78,5 +81,18 @@ public class AndroidExtensions {
 		canvas.drawBitmap(source, sourceRect, targetRect, null);
 		
 		return result;
+	}
+	
+	/**
+	 * Shows Toast with provided message centered in the middle of the context.
+	 * @param context The message context.
+	 * @param messageId The message identifier.
+	 * @param lng If true a long Toast is shown; otherwise short one is shown.
+	 */
+	public static void showCenteredToast(Context context, int messageId, boolean lng)
+	{
+		Toast toast = Toast.makeText(context, messageId, lng ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.CENTER, 0, 0);
+		toast.show();
 	}
 }

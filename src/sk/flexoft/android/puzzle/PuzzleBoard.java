@@ -4,8 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.TreeMap;
 
-import android.view.Gravity;
-import android.widget.Toast;
+import sk.flexoft.android.puzzle.util.AndroidExtensions;
 
 /**
  * @author Vladimir Iszer
@@ -338,9 +337,7 @@ public class PuzzleBoard {
 			hasFinished = true;
 			
 			// show toast for congratulations
-			Toast toast = Toast.makeText(puzzleActivity.getApplicationContext(), R.string.congratulations, Toast.LENGTH_LONG);
-			toast.setGravity(Gravity.CENTER, 0, 0);
-			toast.show();
+			AndroidExtensions.showCenteredToast(puzzleActivity.getApplicationContext(), R.string.congratulations, true);
 		}
 	}
 }
